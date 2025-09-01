@@ -1,0 +1,174 @@
+@model FileUploadViewModel
+@{
+    ViewData["Title"] = "Upload File";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Upload File</h1>
+            <p class="text-gray-600">Share educational materials with students</p>
+        </div>
+
+        <form asp-controller="File" asp-action="Upload" method="post" enctype="multipart/form-data" class="space-y-6">
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+
+            <div>
+                <label asp-for="File" class="block text-sm font-medium text-gray-700 mb-2">Select File</label>
+                <div
+                    class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
+                             viewBox="0 0 48 48">
+                            <path
+                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="flex text-sm text-gray-600">
+                            <input asp-for="File" type="file"
+                                   class="sr-only" id="file-upload"
+                                   accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp,.mp4,.avi,.mov,.wmv,.flv,.webm,.mp3,.wav,.flac,.aac,.ogg,.txt,.doc,.docx,.ppt,.pptx,.xls,.xlsx"/>
+                            <label for="file-upload"
+                                   class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500 touch-target touch-manipulation">
+                                <span class="text-lg">Choose a file</span>
+                            </label>
+                            <p class="pl-1">or drag and drop</p>
+                        </div>
+                        <p class="text-xs text-gray-500">PDF, images, videos, audio, documents up to 100MB</p>
+                    </div>
+                </div>
+                <span asp-validation-for="File" class="text-red-600 text-sm"></span>
+                <div id="file-info" class="mt-2 text-sm text-gray-600 hidden"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="Class" class="block text-sm font-medium text-gray-700 mb-2">Class</label>
+                    <select asp-for="Class" id="classSelect"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-target">
+                        <option value="">Select Class</option>
+                        @foreach (var schoolClass in ViewBag.Classes as List<SchoolClass> ?? new List<SchoolClass>())
+                        {
+                            <option value="@schoolClass.ClassName">@schoolClass.DisplayName</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Class" class="text-red-600 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Subject" class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                    <div class="relative">
+                        <input asp-for="Subject" type="text" list="subjects-list"
+                               placeholder="Enter or select subject"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-target"/>
+                        <datalist id="subjects-list">
+                            <!-- Will be populated by JavaScript -->
+                        </datalist>
+                    </div>
+                    <span asp-validation-for="Subject" class="text-red-600 text-sm"></span>
+                    <p class="text-xs text-gray-500 mt-1">If the subject doesn't exist, it will be created
+                        automatically</p>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Description" class="block text-sm font-medium text-gray-700 mb-2">Description
+                    (Optional)</label>
+                <textarea asp-for="Description" rows="3"
+                          placeholder="Brief description of the file content..."
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-target"></textarea>
+                <span asp-validation-for="Description" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium text-lg touch-target touch-manipulation transition-colors">
+                    ⬆️ Upload File
+                </button>
+                <a asp-controller="File" asp-action="Browse"
+                   class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-lg font-medium text-lg text-center touch-target touch-manipulation transition-colors">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+        <div class="mt-8 p-4 bg-blue-50 rounded-lg">
+            <h3 class="font-medium text-blue-900 mb-2">Supported File Types:</h3>
+            <div class="text-sm text-blue-800 space-y-1">
+                <p><strong>Documents:</strong> PDF, Word (.doc, .docx), PowerPoint (.ppt, .pptx), Excel (.xls, .xlsx),
+                    Text (.txt)</p>
+                <p><strong>Images:</strong> JPEG, PNG, GIF, BMP, WebP</p>
+                <p><strong>Videos:</strong> MP4, AVI, MOV, WMV, FLV, WebM</p>
+                <p><strong>Audio:</strong> MP3, WAV, FLAC, AAC, OGG</p>
+            </div>
+            <p class="text-xs text-blue-600 mt-2">Maximum file size: 100MB</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+    <script>
+        // File upload preview
+        document.getElementById('file-upload').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            const fileInfo = document.getElementById('file-info');
+
+            if (file) {
+                const size = (file.size / 1024 / 1024).toFixed(2);
+                fileInfo.innerHTML = `Selected: <strong>${file.name}</strong> (${size} MB)`;
+                fileInfo.classList.remove('hidden');
+            } else {
+                fileInfo.classList.add('hidden');
+            }
+        });
+
+        // Class selection change handler
+        document.getElementById('classSelect').addEventListener('change', function () {
+            const className = this.value;
+            const subjectsList = document.getElementById('subjects-list');
+
+            // Clear existing options
+            subjectsList.innerHTML = '';
+
+            if (className) {
+                // Fetch subjects for the selected class
+                fetch(`/File/GetSubjects?className=${className}`)
+                    .then(response => response.json())
+                    .then(subjects => {
+                        subjects.forEach(subject => {
+                            const option = document.createElement('option');
+                            option.value = subject.value;
+                            subjectsList.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching subjects:', error));
+            }
+        });
+
+        // Drag and drop functionality
+        const dropZone = document.querySelector('.border-dashed');
+        const fileInput = document.getElementById('file-upload');
+
+        dropZone.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            this.classList.add('border-blue-400', 'bg-blue-50');
+        });
+
+        dropZone.addEventListener('dragleave', function (e) {
+            e.preventDefault();
+            this.classList.remove('border-blue-400', 'bg-blue-50');
+        });
+
+        dropZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            this.classList.remove('border-blue-400', 'bg-blue-50');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+}

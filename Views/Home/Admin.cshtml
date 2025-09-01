@@ -1,0 +1,192 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-4">Admin Dashboard</h1>
+    <p class="text-gray-600">Manage users, monitor system usage, and oversee file uploads</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center">
+            <div class="text-3xl mr-4">📁</div>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">@Model.TotalFiles</h3>
+                <p class="text-gray-600">Total Files</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center">
+            <div class="text-3xl mr-4">💾</div>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">@FileHelper.FormatFileSize(Model.TotalFileSize)</h3>
+                <p class="text-gray-600">Storage Used</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center">
+            <div class="text-3xl mr-4">👥</div>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">@Model.Teachers.Count</h3>
+                <p class="text-gray-600">Teachers</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center">
+            <div class="text-3xl mr-4">🎓</div>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">@Model.Classes.Count</h3>
+                <p class="text-gray-600">Active Classes</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-8">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+    <div class="flex flex-wrap gap-4">
+        <a asp-controller="Account" asp-action="CreateUser"
+           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+            👤 Create Teacher Account
+        </a>
+
+        <a asp-controller="File" asp-action="Upload"
+           class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+            ⬆️ Upload Files
+        </a>
+
+        <a asp-controller="File" asp-action="Browse"
+           class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+            📂 Browse All Files
+        </a>
+
+        <a asp-controller="Account" asp-action="ManageUsers"
+           class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+            ⚙️ Manage Users
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Recent Files -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-900">Recent Files</h2>
+            <a asp-controller="File" asp-action="Browse" class="text-blue-600 hover:text-blue-800 text-sm">View All</a>
+        </div>
+
+        @if (Model.RecentFiles.Any())
+        {
+            <div class="space-y-3">
+                @foreach (var file in Model.RecentFiles)
+                {
+                    <div class="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg">
+                        <div class="text-xl">@FileHelper.GetFileIcon(file.FileType)</div>
+                        <div class="flex-1 min-w-0">
+                            <a asp-controller="File" asp-action="View" asp-route-id="@file.FileId"
+                               class="font-medium text-gray-900 hover:text-blue-600 truncate block">
+                                @file.FileName
+                            </a>
+                            <p class="text-sm text-gray-500">@file.Class - @file.Subject</p>
+                            <p class="text-xs text-gray-400">
+                                @file.UploadDate.ToString("MMM dd, yyyy") •
+                                @FileHelper.FormatFileSize(file.FileSize)
+                                @if (file.UploadedByUser != null)
+                                {
+                                    <span> • @file.UploadedByUser.Username</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-gray-500 text-center py-8">No files uploaded yet</p>
+        }
+    </div>
+
+    <!-- Teachers Overview -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-900">Teachers</h2>
+            <a asp-controller="Account" asp-action="CreateUser" class="text-blue-600 hover:text-blue-800 text-sm">Add
+                Teacher</a>
+        </div>
+
+        @if (Model.Teachers.Any())
+        {
+            <div class="space-y-3">
+                @foreach (var teacher in Model.Teachers.Take(10))
+                {
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="text-xl">👤</div>
+                            <div>
+                                <p class="font-medium text-gray-900">@teacher.Username</p>
+                                <p class="text-sm text-gray-500">
+                                    Created @teacher.CreatedDate.ToString("MMM dd, yyyy")
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            @{
+                                var assignedClasses = System.Text.Json.JsonSerializer.Deserialize<string[]>(teacher.AssignedClasses);
+                            }
+                            @string.Join(", ", assignedClasses ?? new string[0])
+                        </div>
+                    </div>
+                }
+
+                @if (Model.Teachers.Count > 10)
+                {
+                    <div class="text-center pt-3">
+                        <a asp-controller="Account" asp-action="ManageUsers"
+                           class="text-blue-600 hover:text-blue-800 text-sm">
+                            View all @Model.Teachers.Count teachers
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-8">
+                <p class="text-gray-500 mb-4">No teachers created yet</p>
+                <a asp-controller="Account" asp-action="CreateUser"
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+                    Create First Teacher
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Classes Overview -->
+<div class="bg-white rounded-lg shadow-md p-6 mt-8">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Classes</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+        @foreach (var schoolClass in Model.Classes)
+        {
+            <a asp-controller="File" asp-action="Browse" asp-route-className="@schoolClass.ClassName"
+               class="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 text-center transition-colors touch-target touch-manipulation">
+                <div class="text-2xl mb-2">🎓</div>
+                <div class="font-medium text-gray-900">@schoolClass.DisplayName</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    Click to browse
+                </div>
+            </a>
+        }
+    </div>
+</div>

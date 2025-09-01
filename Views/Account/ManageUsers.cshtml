@@ -1,0 +1,135 @@
+@model List<UserAccount>
+@{
+ViewData["Title"] = "Manage Users";
+}
+
+<div class="mb-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Manage Users</h1>
+            <p class="text-gray-600">View and manage teacher accounts</p>
+        </div>
+        <a asp-controller="Account" asp-action="CreateUser"
+           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+            👤 Add Teacher
+        </a>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Teacher
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Assigned Classes
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                </th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                </th>
+            </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+            @foreach (var user in Model)
+            {
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="text-2xl mr-3">👤</div>
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">@user.Username</div>
+                            <div class="text-sm text-gray-500">@user.UserType</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm text-gray-900">
+                        @{
+                        var assignedClasses = System.Text.Json.JsonSerializer.Deserialize<string[]>(user.AssignedClasses) ?? new string[0];
+                        }
+                        @if (assignedClasses.Any())
+                        {
+                        <div class="flex flex-wrap gap-1">
+                            @foreach (var className in assignedClasses)
+                            {
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    @className
+                                                </span>
+                            }
+                        </div>
+                        }
+                        else
+                        {
+                        <span class="text-gray-500">No classes assigned</span>
+                        }
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    @user.CreatedDate.ToString("MMM dd, yyyy")
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    @if (user.IsActive)
+                    {
+                    <span
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Active
+                                    </span>
+                    }
+                    else
+                    {
+                    <span
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Inactive
+                                    </span>
+                    }
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    @if (user.IsActive)
+                    {
+                    <form asp-controller="Account" asp-action="DeleteUser" asp-route-userId="@user.UserId" method="post"
+                          onsubmit="return confirm('Are you sure you want to deactivate this user?')" class="inline">
+                        <button type="submit"
+                                class="text-red-600 hover:text-red-800 touch-target touch-manipulation">
+                            Deactivate
+                        </button>
+                    </form>
+                    }
+                </td>
+            </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+}
+else
+{
+<div class="bg-white rounded-lg shadow-md p-8 text-center">
+    <div class="text-6xl mb-4">👥</div>
+    <h3 class="text-xl font-medium text-gray-900 mb-2">No Teachers Created</h3>
+    <p class="text-gray-600 mb-6">Create teacher accounts to allow file uploads and management.</p>
+    <a asp-controller="Account" asp-action="CreateUser"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+        Create First Teacher
+    </a>
+</div>
+}
+
+<div class="mt-8">
+    <a asp-controller="Home" asp-action="Admin"
+       class="text-blue-600 hover:text-blue-800">
+        ← Back to Admin Dashboard
+    </a>
+</div>

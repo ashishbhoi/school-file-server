@@ -1,0 +1,205 @@
+@model FileBrowserViewModel
+@{
+    ViewData["Title"] = "Browse Files";
+}
+
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-4">Browse Files</h1>
+
+    <!-- Search and Filters -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <form asp-controller="File" asp-action="Browse" method="get" class="space-y-4">
+            <!-- Search Bar -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <input name="search" value="@Model.SearchTerm" type="text"
+                           placeholder="Search files by name, subject, or description..."
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg touch-target"/>
+                </div>
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+                    🔍 Search
+                </button>
+            </div>
+
+            <!-- Class and Subject Filters -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Class</label>
+                    <select name="className" id="classSelect"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-target">
+                        <option value="">All Classes</option>
+                        @foreach (var schoolClass in Model.Classes)
+                        {
+                            <option value="@schoolClass.ClassName"
+                                    selected="@(schoolClass.ClassName == Model.SelectedClass)">
+                                @schoolClass.DisplayName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                    <select name="subject" id="subjectSelect"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-target">
+                        <option value="">All Subjects</option>
+                        @foreach (var subject in Model.Subjects)
+                        {
+                            <option value="@subject.SubjectName"
+                                    selected="@(subject.SubjectName == Model.SelectedSubject)">
+                                @subject.SubjectName
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <button type="submit"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+                    Apply Filters
+                </button>
+                <a asp-controller="File" asp-action="Browse"
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+                    Clear Filters
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="mb-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-gray-900">
+            @if (!string.IsNullOrEmpty(Model.SearchTerm))
+            {
+                <span>Search Results for "@Model.SearchTerm"</span>
+            }
+            else if (!string.IsNullOrEmpty(Model.SelectedClass) && !string.IsNullOrEmpty(Model.SelectedSubject))
+            {
+                <span>Class @Model.SelectedClass - @Model.SelectedSubject</span>
+            }
+            else if (!string.IsNullOrEmpty(Model.SelectedClass))
+            {
+                <span>Class @Model.SelectedClass</span>
+            }
+            else
+            {
+                <span>All Files</span>
+            }
+            <span class="text-gray-500 font-normal">(@Model.Files.Count files)</span>
+        </h2>
+
+        @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
+        {
+            <a asp-controller="File" asp-action="Upload"
+               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+                ⬆️ Upload File
+            </a>
+        }
+    </div>
+
+    @if (Model.Files.Any())
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            @foreach (var file in Model.Files)
+            {
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+                    <a asp-controller="File" asp-action="View" asp-route-id="@file.FileId"
+                       class="block p-4 hover:bg-gray-50 rounded-lg touch-manipulation">
+                        <div class="flex items-start space-x-3 mb-3">
+                            <div class="text-3xl flex-shrink-0">@FileHelper.GetFileIcon(file.FileType)</div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-medium text-gray-900 truncate mb-1"
+                                    title="@file.FileName">@file.FileName</h3>
+                                <p class="text-sm text-blue-600 font-medium">@file.Class - @file.Subject</p>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(file.Description))
+                        {
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2">@file.Description</p>
+                        }
+
+                        <div class="text-xs text-gray-500 space-y-1">
+                            <p>📅 @file.UploadDate.ToString("MMM dd, yyyy")</p>
+                            <p>💾 @FileHelper.FormatFileSize(file.FileSize)</p>
+                            @if (file.UploadedByUser != null)
+                            {
+                                <p>👤 @file.UploadedByUser.Username</p>
+                            }
+                        </div>
+                    </a>
+
+                    @if ((User.IsInRole("Admin") || (User.IsInRole("Teacher") && User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == file.UploadedBy.ToString())))
+                    {
+                        <div class="px-4 pb-4">
+                            <form asp-controller="File" asp-action="Delete" asp-route-id="@file.FileId" method="post"
+                                  onsubmit="return confirm('Are you sure you want to delete this file?')"
+                                  class="inline">
+                                <button type="submit"
+                                        class="text-red-600 hover:text-red-800 text-sm font-medium touch-target touch-manipulation">
+                                    🗑️ Delete
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">📂</div>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">No files found</h3>
+            <p class="text-gray-600 mb-6">
+                @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                {
+                    <span>Try adjusting your search terms or filters.</span>
+                }
+                else
+                {
+                    <span>No files have been uploaded for the selected criteria.</span>
+                }
+            </p>
+
+            @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
+            {
+                <a asp-controller="File" asp-action="Upload"
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium touch-target touch-manipulation transition-colors">
+                    Upload First File
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('classSelect').addEventListener('change', function () {
+            const className = this.value;
+            const subjectSelect = document.getElementById('subjectSelect');
+
+            // Clear subject options
+            subjectSelect.innerHTML = '<option value="">All Subjects</option>';
+
+            if (className) {
+                // Fetch subjects for the selected class
+                fetch(`/File/GetSubjects?className=${className}`)
+                    .then(response => response.json())
+                    .then(subjects => {
+                        subjects.forEach(subject => {
+                            const option = document.createElement('option');
+                            option.value = subject.value;
+                            option.textContent = subject.text;
+                            subjectSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching subjects:', error));
+            }
+        });
+    </script>
+}

@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for touch targets */
+.touch-target {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.touch-manipulation {
+    touch-action: manipulation;
+}

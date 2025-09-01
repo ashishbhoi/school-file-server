@@ -1,0 +1,92 @@
+@{
+ViewData["Title"] = "Home";
+}
+
+<div class="text-center mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to School File Server</h1>
+    <p class="text-xl text-gray-600 mb-8">Access educational materials and resources for all classes</p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a asp-controller="File" asp-action="Browse"
+           class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-medium touch-target touch-manipulation transition-colors">
+            📁 Browse All Files
+        </a>
+
+        @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
+        {
+        <a asp-controller="File" asp-action="Upload"
+           class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg text-lg font-medium touch-target touch-manipulation transition-colors">
+            ⬆️ Upload Files
+        </a>
+        }
+    </div>
+</div>
+
+<!-- Class Navigation -->
+<div class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Browse by Class</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+        @foreach (var schoolClass in ViewBag.Classes as List<SchoolClass> ?? new List<SchoolClass>())
+        {
+        <a asp-controller="File" asp-action="Browse" asp-route-className="@schoolClass.ClassName"
+           class="bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-300 rounded-lg p-6 text-center transition-all duration-200 touch-target touch-manipulation group">
+            <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🎓</div>
+            <div class="font-bold text-gray-900">@schoolClass.DisplayName</div>
+        </a>
+        }
+    </div>
+</div>
+
+<!-- Recent Files -->
+@if (ViewBag.RecentFiles is List<SchoolFile> recentFiles && recentFiles.Any())
+{
+<div class="mb-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Recent Files</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @foreach (var file in recentFiles)
+        {
+        <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+            <a asp-controller="File" asp-action="View" asp-route-id="@file.FileId"
+               class="block p-4 hover:bg-gray-50 rounded-lg touch-manipulation">
+                <div class="flex items-start space-x-3">
+                    <div class="text-2xl flex-shrink-0">@FileHelper.GetFileIcon(file.FileType)</div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-medium text-gray-900 truncate" title="@file.FileName">@file.FileName</h3>
+                        <p class="text-sm text-gray-500">@file.Class - @file.Subject</p>
+                        <p class="text-xs text-gray-400">@file.UploadDate.ToString("MMM dd, yyyy")</p>
+                        <p class="text-xs text-gray-400">@FileHelper.FormatFileSize(file.FileSize)</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        }
+    </div>
+</div>
+}
+
+<!-- Features Section -->
+<div class="bg-white rounded-lg shadow-md p-8 mb-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Features</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+            <div class="text-4xl mb-4">📱</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Touch Optimized</h3>
+            <p class="text-gray-600">Designed for touch screen digital class boards with large, easy-to-tap
+                interfaces.</p>
+        </div>
+
+        <div class="text-center">
+            <div class="text-4xl mb-4">🔒</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Secure & Offline</h3>
+            <p class="text-gray-600">Works completely offline on your school intranet without requiring internet
+                access.</p>
+        </div>
+
+        <div class="text-center">
+            <div class="text-4xl mb-4">📚</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">All File Types</h3>
+            <p class="text-gray-600">Support for PDFs, images, videos, audio files, and documents with full-screen
+                viewing.</p>
+        </div>
+    </div>
+</div>

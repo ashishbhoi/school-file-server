@@ -1,0 +1,92 @@
+@model CreateUserViewModel
+@{
+    ViewData["Title"] = "Create Teacher Account";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Create Teacher Account</h1>
+            <p class="text-gray-600">Add a new teacher to the system</p>
+        </div>
+
+        <form asp-controller="Account" asp-action="CreateUser" method="post" class="space-y-6">
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="Username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input asp-for="Username" type="text"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-target"
+                           placeholder="Enter username"/>
+                    <span asp-validation-for="Username" class="text-red-600 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="UserType" class="block text-sm font-medium text-gray-700 mb-2">User Type</label>
+                    <select asp-for="UserType"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-target">
+                        <option value="@UserType.Teacher">Teacher</option>
+                        <option value="@UserType.Admin">Admin</option>
+                    </select>
+                    <span asp-validation-for="UserType" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input asp-for="Password" type="password"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-target"
+                       placeholder="Enter password (minimum 6 characters)"/>
+                <span asp-validation-for="Password" class="text-red-600 text-sm"></span>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Assigned Classes</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    @for (int i = 0; i < Model.AvailableClasses.Count; i++)
+                    {
+                        var schoolClass = Model.AvailableClasses[i];
+                        <div class="flex items-center">
+                            <input type="checkbox"
+                                   name="AssignedClasses"
+                                   value="@schoolClass.ClassName"
+                                   id="class_@schoolClass.ClassName"
+                                   class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 touch-target"/>
+                            <label for="class_@schoolClass.ClassName" class="ml-2 text-sm text-gray-700">
+                                @schoolClass.DisplayName
+                            </label>
+                        </div>
+                    }
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Select the classes this teacher will have access to upload files
+                    for</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium text-lg touch-target touch-manipulation transition-colors">
+                    Create Teacher Account
+                </button>
+                <a asp-controller="Home" asp-action="Admin"
+                   class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-lg font-medium text-lg text-center touch-target touch-manipulation transition-colors">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+        <div class="mt-8 p-4 bg-yellow-50 rounded-lg">
+            <h3 class="font-medium text-yellow-900 mb-2">Security Notes:</h3>
+            <ul class="text-sm text-yellow-800 space-y-1">
+                <li>• Passwords must be at least 6 characters long</li>
+                <li>• Usernames must be unique across the system</li>
+                <li>• Teachers can only upload files to their assigned classes</li>
+                <li>• Admins have full access to all classes and management functions</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}
