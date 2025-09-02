@@ -79,4 +79,49 @@ namespace SchoolFileServer.Models.ViewModels
         public List<string> AssignedClasses { get; set; } = new();
         public List<SchoolClass> AvailableClasses { get; set; } = new();
     }
+
+    public class CreateClassViewModel
+    {
+        [Required]
+        [StringLength(10, ErrorMessage = "Class name cannot exceed 10 characters")]
+        [Display(Name = "Class Name")]
+        public string ClassName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(100, ErrorMessage = "Display name cannot exceed 100 characters")]
+        [Display(Name = "Display Name")]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [Required]
+        [Range(1, 1000, ErrorMessage = "Sort order must be between 1 and 1000")]
+        [Display(Name = "Sort Order")]
+        public int SortOrder { get; set; } = 1;
+    }
+
+    public class EditClassViewModel
+    {
+        public int ClassId { get; set; }
+
+        [Required]
+        [StringLength(10, ErrorMessage = "Class name cannot exceed 10 characters")]
+        [Display(Name = "Class Name")]
+        public string ClassName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(100, ErrorMessage = "Display name cannot exceed 100 characters")]
+        [Display(Name = "Display Name")]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [Required]
+        [Range(1, 1000, ErrorMessage = "Sort order must be between 1 and 1000")]
+        [Display(Name = "Sort Order")]
+        public int SortOrder { get; set; } = 1;
+
+        [Display(Name = "Active")]
+        public bool IsActive { get; set; } = true;
+
+        // Read-only properties for display
+        public int FileCount { get; set; }
+        public string? OriginalClassName { get; set; }
+    }
 }
