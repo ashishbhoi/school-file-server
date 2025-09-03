@@ -9,18 +9,32 @@
 <body class="bg-gray-50 min-h-screen">
 <nav class="bg-blue-600 shadow-lg">
     <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between h-16">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo/Brand -->
             <div class="flex items-center">
                 <a asp-controller="Home" asp-action="Index"
                    class="flex items-center space-x-2 text-white hover:text-blue-200 transition-colors">
                     <span class="text-2xl">📚</span>
-                    <span class="text-xl font-bold">School File Server</span>
+                    <span class="text-xl font-bold hidden sm:block">School File Server</span>
+                    <span class="text-lg font-bold sm:hidden">SFS</span>
                 </a>
             </div>
 
-            <div class="flex items-center space-x-4">
+            <!-- Mobile menu button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" type="button" 
+                        class="text-white hover:text-blue-200 focus:outline-none focus:text-blue-200 transition-colors"
+                        aria-label="Toggle menu">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex md:items-center md:space-x-4">
                 <a asp-controller="File" asp-action="Browse"
-                   class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium touch-target touch-manipulation flex items-center justify-center text-center">
+                   class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                     Browse Files
                 </a>
 
@@ -29,7 +43,7 @@
                     @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
                     {
                         <a asp-controller="File" asp-action="Upload"
-                           class="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-medium touch-target touch-manipulation flex items-center justify-center text-center">
+                           class="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                             Upload File
                         </a>
                     }
@@ -37,14 +51,15 @@
                     @if (User.IsInRole("Admin"))
                     {
                         <a asp-controller="Home" asp-action="Admin"
-                           class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium touch-target touch-manipulation flex items-center justify-center text-center">
+                           class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                             Admin
                         </a>
                     }
 
+                    <!-- Desktop User Menu -->
                     <div class="relative group">
                         <button
-                            class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium touch-target touch-manipulation flex items-center">
+                            class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors">
                             👤 @User.Identity.Name
                             <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
@@ -56,7 +71,7 @@
                             class="absolute right-0 w-48 mt-2 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
                             <div class="py-1">
                                 <a asp-controller="Account" asp-action="Logout"
-                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 touch-target touch-manipulation items-center">
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     Logout
                                 </a>
                             </div>
@@ -66,8 +81,56 @@
                 else
                 {
                     <a asp-controller="Account" asp-action="Login"
-                       class="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-medium touch-target touch-manipulation flex items-center justify-center text-center">
+                       class="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                         Login
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-blue-700 border-t border-blue-500">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a asp-controller="File" asp-action="Browse"
+                   class="block text-white hover:text-blue-200 hover:bg-blue-500 px-3 py-2 rounded-md text-base font-medium transition-colors touch-target">
+                    📂 Browse Files
+                </a>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
+                    {
+                        <a asp-controller="File" asp-action="Upload"
+                           class="block text-white hover:text-blue-200 hover:bg-blue-500 px-3 py-2 rounded-md text-base font-medium transition-colors touch-target">
+                            ⬆️ Upload File
+                        </a>
+                    }
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Home" asp-action="Admin"
+                           class="block text-white hover:text-blue-200 hover:bg-blue-500 px-3 py-2 rounded-md text-base font-medium transition-colors touch-target">
+                            ⚙️ Admin Dashboard
+                        </a>
+                    }
+
+                    <!-- Mobile User Section -->
+                    <div class="border-t border-blue-500 pt-3 mt-3">
+                        <div class="px-3 py-2">
+                            <div class="text-base font-medium text-white">👤 @User.Identity.Name</div>
+                            <div class="text-sm text-blue-200">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</div>
+                        </div>
+                        <a asp-controller="Account" asp-action="Logout"
+                           class="block text-white hover:text-blue-200 hover:bg-blue-500 px-3 py-2 rounded-md text-base font-medium transition-colors touch-target">
+                            🚪 Logout
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login"
+                       class="block bg-blue-500 hover:bg-blue-400 text-white px-3 py-2 rounded-md text-base font-medium transition-colors touch-target">
+                        🔑 Login
                     </a>
                 }
             </div>
@@ -101,5 +164,6 @@
 </footer>
 
 @await RenderSectionAsync("Scripts", required: false)
+<script src="~/js/site.js"></script>
 </body>
 </html>
